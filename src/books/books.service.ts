@@ -70,6 +70,7 @@ export class BooksService {
             autor
         })
 
+        // magia negra das trevas essa parte aqui (puro ocultismo)
         return this.bookRepository.save(newBook)
     }
 

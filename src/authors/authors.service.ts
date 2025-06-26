@@ -8,6 +8,7 @@ import { Repository } from "typeorm"
 import { Author } from "./authors.entity"
 import { InjectRepository } from "@nestjs/typeorm"
 
+// deixei os dtos aqui dentro mesmo para simplificar minha vida
 export class CreateAuthorDto {
     @ApiProperty({
         description: "O nome completo do autor",
