@@ -1,14 +1,21 @@
-import { Controller, Get, Post } from "@nestjs/common"
+import { Controller, Get, Post, Body } from "@nestjs/common"
+import { AuthorsService, CreateAuthorDto } from "./authors.service"
 
 @Controller("authors")
 export class AuthorsController {
+    private readonly authorsService: AuthorsService
+
+    constructor(service: AuthorsService) {
+        this.authorsService = service
+    }
+
     @Get()
     getAuthors() {
-        return "lista de autores"
+        return this.authorsService.findAll()
     }
 
     @Post("create")
-    createAuthor() {
-        return "autor criado"
+    createAuthor(@Body() body: CreateAuthorDto) {
+        return this.authorsService.createAuthor(body)
     }
 }
