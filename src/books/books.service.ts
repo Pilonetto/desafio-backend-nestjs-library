@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, NotFoundException } from "@nestjs/common"
 import { Book } from "./books.entity"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty, PartialType } from "@nestjs/swagger"
 
 export class CreateBookDto {
     @ApiProperty({
@@ -31,6 +31,8 @@ export class CreateBookDto {
     autorId: string
 }
 
+export class UpdateBookDto extends PartialType(CreateBookDto) {}
+
 @Injectable()
 export class BooksService {
     private bookRepository: Repository<Book>
@@ -42,12 +44,33 @@ export class BooksService {
         this.bookRepository = repository
     }
 
+    async findOne(id: string) {
+        const book = await this.bookRepository.findOneBy({ id })
+        if (!book) {
+            throw new NotFoundException(
+                `Livro com o ID "${id}" não encontrado.`
+            )
+        }
+        return book
+    }
+
     async findAll() {
         return this.bookRepository.find()
     }
 
-    async createBook(createBookDto: CreateBookDto) {
+    async create(createBookDto: CreateBookDto) {
         const newBook = this.bookRepository.create(createBookDto)
         return this.bookRepository.save(newBook)
+    }
+
+    async update(id: string, updatedBookDto: UpdateBookDto) {
+        const book = await this.findOne(id)
+        const updatedBook = this.bookRepository.merge(book, updatedBookDto)
+        return this.bookRepository.save(updatedBook)
+    }
+
+    async remove(id: string) {
+        const book = await this.findOne(id)
+        return this.bookRepository.remove(book)
     }
 }

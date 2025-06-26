@@ -22,16 +22,16 @@ export class AuthorsController {
         this.authorsService = service
     }
 
-    @Get()
-    @ApiOperation({ summary: "Buscar todos os autores" })
-    findAll() {
-        return this.authorsService.findAll()
-    }
-
     @Get(":id")
     @ApiOperation({ summary: "Buscar um autor por ID" })
     findOne(@Param("id") id: string) {
         return this.authorsService.findOne(id)
+    }
+
+    @Get()
+    @ApiOperation({ summary: "Buscar todos os autores" })
+    findAll() {
+        return this.authorsService.findAll()
     }
 
     @Post("create")
