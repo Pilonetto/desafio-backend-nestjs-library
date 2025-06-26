@@ -3,6 +3,7 @@ import { Book } from "./books.entity"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import { ApiProperty, PartialType } from "@nestjs/swagger"
+import { AuthorsService } from "src/authors/authors.service"
 
 export class CreateBookDto {
     @ApiProperty({
@@ -36,20 +37,21 @@ export class UpdateBookDto extends PartialType(CreateBookDto) {}
 @Injectable()
 export class BooksService {
     private bookRepository: Repository<Book>
+    private authorsService: AuthorsService
 
     constructor(
         @InjectRepository(Book)
-        repository: Repository<Book>
+        repository: Repository<Book>,
+        service: AuthorsService
     ) {
         this.bookRepository = repository
+        this.authorsService = service
     }
 
     async findOne(id: string) {
         const book = await this.bookRepository.findOneBy({ id })
         if (!book) {
-            throw new NotFoundException(
-                `Livro com o ID "${id}" não encontrado.`
-            )
+            throw new NotFoundException(`Livro com o ID '${id}' não encontrado`)
         }
         return book
     }
@@ -59,7 +61,15 @@ export class BooksService {
     }
 
     async create(createBookDto: CreateBookDto) {
-        const newBook = this.bookRepository.create(createBookDto)
+        const { autorId, ...bookData } = createBookDto
+
+        const autor = await this.authorsService.findOne(autorId)
+
+        const newBook = this.bookRepository.create({
+            ...bookData,
+            autor
+        })
+
         return this.bookRepository.save(newBook)
     }
 
@@ -69,7 +79,7 @@ export class BooksService {
         return this.bookRepository.save(updatedBook)
     }
 
-    async remove(id: string) {
+    async delete(id: string) {
         const book = await this.findOne(id)
         return this.bookRepository.remove(book)
     }

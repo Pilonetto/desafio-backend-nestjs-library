@@ -1,11 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn } from "typeorm"
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm"
+import { Book } from "src/books/books.entity"
 
 @Entity("authors")
 export class Author {
     @PrimaryGeneratedColumn("uuid")
     id: string
 
-    @Column()
+    @Column({ unique: true })
     nome: string
 
     @Column()
@@ -13,4 +14,7 @@ export class Author {
 
     @Column()
     nacionalidade: string
+
+    @OneToMany(() => Book, (book) => book.autor)
+    livros: Book[]
 }

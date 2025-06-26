@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import {
+    ConflictException,
+    Injectable,
+    NotFoundException
+} from "@nestjs/common"
 import { ApiProperty, PartialType } from "@nestjs/swagger"
 import { Repository } from "typeorm"
 import { Author } from "./authors.entity"
@@ -43,9 +47,7 @@ export class AuthorsService {
     async findOne(id: string) {
         const author = await this.authorRepository.findOneBy({ id })
         if (!author) {
-            throw new NotFoundException(
-                `Autor com o ID "${id}" não encontrado.`
-            )
+            throw new NotFoundException(`Autor com o ID '${id}' não encontrado`)
         }
         return author
     }
@@ -55,6 +57,16 @@ export class AuthorsService {
     }
 
     async create(createAuthorDto: CreateAuthorDto) {
+        const existingAuthor = await this.authorRepository.findOneBy({
+            nome: createAuthorDto.nome
+        })
+
+        if (existingAuthor) {
+            throw new ConflictException(
+                `Um autor com o nome '${createAuthorDto.nome}' já existe`
+            )
+        }
+
         const newAuthor = this.authorRepository.create(createAuthorDto)
         return this.authorRepository.save(newAuthor)
     }
@@ -68,7 +80,7 @@ export class AuthorsService {
         return this.authorRepository.save(updatedAuthor)
     }
 
-    async remove(id: string) {
+    async delete(id: string) {
         const author = await this.findOne(id)
         await this.authorRepository.remove(author)
     }

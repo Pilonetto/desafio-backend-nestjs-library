@@ -48,7 +48,7 @@ export class AuthorsController {
 
     @Delete("delete/:id")
     @ApiOperation({ summary: "Deletar um autor" })
-    remove(@Param("id") id: string) {
-        return this.authorsService.remove(id)
+    delete(@Param("id") id: string) {
+        return this.authorsService.delete(id)
     }
 }
