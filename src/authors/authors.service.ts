@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common"
-import { ApiProperty } from "@nestjs/swagger"
+import { Injectable, NotFoundException } from "@nestjs/common"
+import { ApiProperty, PartialType } from "@nestjs/swagger"
 import { Repository } from "typeorm"
 import { Author } from "./authors.entity"
 import { InjectRepository } from "@nestjs/typeorm"
@@ -27,6 +27,8 @@ export class CreateAuthorDto {
     nacionalidade: string
 }
 
+export class UpdateAuthorDto extends PartialType(CreateAuthorDto) {} // lembrete: PartialType pega todas as propriedades e deixa opcionais (apenas para fins de documentação)
+
 @Injectable()
 export class AuthorsService {
     private authorRepository: Repository<Author>
@@ -38,12 +40,36 @@ export class AuthorsService {
         this.authorRepository = repository
     }
 
+    async findOne(id: string) {
+        const author = await this.authorRepository.findOneBy({ id })
+        if (!author) {
+            throw new NotFoundException(
+                `Autor com o ID "${id}" não encontrado.`
+            )
+        }
+        return author
+    }
+
     async findAll() {
         return this.authorRepository.find()
     }
 
-    async createAuthor(createAuthorDto: CreateAuthorDto) {
+    async create(createAuthorDto: CreateAuthorDto) {
         const newAuthor = this.authorRepository.create(createAuthorDto)
         return this.authorRepository.save(newAuthor)
+    }
+
+    async update(id: string, updateAuthorDto: UpdateAuthorDto) {
+        const author = await this.findOne(id)
+        const updatedAuthor = this.authorRepository.merge(
+            author,
+            updateAuthorDto
+        )
+        return this.authorRepository.save(updatedAuthor)
+    }
+
+    async remove(id: string) {
+        const author = await this.findOne(id)
+        await this.authorRepository.remove(author)
     }
 }
